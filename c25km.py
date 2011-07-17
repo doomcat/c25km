@@ -150,4 +150,4 @@ while RUNNING:
 	pygame.display.flip()
 
 	if MAEMO:
-		sleep(1)
+		sleep(0.3)

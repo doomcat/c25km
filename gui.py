@@ -39,6 +39,7 @@ class Button(pygame.Rect):
 
 		self.surface = pygame.Surface(self.size,SRCALPHA)
 		self.oldSize = self.size
+		self.update()
 
 	def update(self):
 		fg = self.fg
