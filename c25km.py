@@ -87,6 +87,7 @@ initFonts(FRES)
 pygame.display.set_caption("Couch to 5k Coach")
 c = pygame.time.Clock()
 w = Workout(state.week,state.workout)
+bell = pygame.mixer.Sound('bicycle_bell.wav')
 background = pygame.image.load('footsteps_in_the_desert.jpg')
 background = pygame.transform.smoothscale(background, RES)
 buttons = {
@@ -144,6 +145,7 @@ while RUNNING:
 		details = w.get(time())
 		if change != details[0]:
 			say(details[0]+'\n')
+			bell.play()
 			change = details[0]
 
 		# Update elapsed time and distance travelled.
