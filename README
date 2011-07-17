@@ -1,0 +1,33 @@
+c25km: A 'Couch To 5K' app for Maemo and Android mobile devices, written
+in Python.
+
+This app helps you keep track of your workout routine. It's simple, but has
+some useful features:
+
+	- Keeps track of what your last week/workout was
+	- Reports distance travelled per workout (when using GPS)
+	- Visual and audible cues, telling you when to jog and when to walk
+	- Large UI suitable for touchscreens, scales to fit resolution
+
+ESSENTIAL DEPENDENCIES:
+	python >= 2.6 (Maemo has this; does Android?)
+	pygame
+
+OPTIONAL DEPENDENCIES:
+	python-location (Needs to be installed from Maemo repositories)
+	gobject
+	psyco (Probably not available for Maemo/Android pythons)
+	espeak/festival/flite (For audible cues)
+
+TO RUN:
+	cd c25km/
+	python -OO c25km.py
+
+The application is fullscreen (at least on Maemo).
+Choose which week and workout you want to start on, and click 'Start!' in the
+top-left-hand corner. If you have GPS enabled, it will automatically start
+tracking your location/distance travelled when you click Start.
+
+The app might seem slightly unresponsive to touch input; this is deliberate.
+I've put a 1-second delay in the main program loop, to save CPU and therefore
+battery on mobile devices.
