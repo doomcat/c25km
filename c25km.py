@@ -184,4 +184,4 @@ while RUNNING:
 	# Sleep a little to save some CPU. Since nothing needs less than a second
 	# for update granularity. This obviously makes the UI less responsive however.
 	if MOBILE:
-		sleep(0.5)
+		sleep(1)
