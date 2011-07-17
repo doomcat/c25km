@@ -40,11 +40,7 @@ class Button(pygame.Rect):
 		self.surface = pygame.Surface(self.size,SRCALPHA)
 		self.oldSize = self.size
 
-	def draw(self,surface):
-		if self.size != self.oldSize:
-			self.surface = pygame.Surface(self.size,SRCALPHA)
-			self.oldSize = self.size
-
+	def update(self):
 		fg = self.fg
 		bg = self.bg
 		label = self.labels[0]
@@ -55,21 +51,28 @@ class Button(pygame.Rect):
 
 		self.surface.fill(bg)
 		pygame.draw.rect(self.surface,fg,(0,0,self.width,self.height),self.pad)
-		#labelX = (self.centerx-(self.pad*4)) - (label.get_width()/2)
-		#labelY = (self.centery-(self.pad*4)) - (label.get_height()/2)
 		labelX = self.pad*2
 		labelY = self.pad*2
 		self.surface.blit(label,(labelX,labelY))
+
+	def draw(self,surface):
+		if self.size != self.oldSize:
+			self.surface = pygame.Surface(self.size,SRCALPHA)
+			self.oldSize = self.size
+			self.update()
+
 		surface.blit(self.surface,self)
 
 	def down(self,pos):
 		if self.collidepoint(pos):
 			self.pressed = True
+			self.update()
 
 	def up(self,pos):
 		if self.collidepoint(pos) and self.pressed:
 			self.f()
 		self.pressed = False
+		self.update()
 
 class Label(pygame.Rect):
 	def __init__(self,text,pos,fg=pygame.Color(255,255,255,255),bg=None,font=fonts['default'],sc=pygame.Color(0,0,0,100)):
