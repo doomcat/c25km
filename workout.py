@@ -73,7 +73,7 @@ class Workout:
 
 	def onGPS(self,device,data):
 		try:
-			d2r = 3.141592 / 180.0
+			#d2r = 3.141592 / 180.0
 			if not device:
 				return
 			if device.fix:
@@ -158,4 +158,4 @@ def distVincenty(lat1, lon1, lat2, lon2):
 			B/6*cos2SigmaM*(-3+4*sinSigma*sinSigma)*(-3+4*cos2SigmaM*cos2SigmaM)))
 		s = b*A*(sigma-deltaSigma)
 
-		return round(s*0.000621371192,2)
+		return round(s*0.000621371192,3)
