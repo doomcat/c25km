@@ -88,7 +88,7 @@ pygame.display.set_caption("Couch to 5k Coach")
 c = pygame.time.Clock()
 w = Workout(state.week,state.workout)
 bell = pygame.mixer.Sound('bicycle_bell.wav')
-background = pygame.image.load('footsteps_in_the_desert.jpg')
+background = pygame.image.load('jogger.jpg')
 background = pygame.transform.smoothscale(background, RES)
 buttons = {
 	'quit': Button('Quit',(690,10),f=quit,font=fonts['h1']),
@@ -124,9 +124,11 @@ labels['command'].centery = (RES[1]/2)-((tmpPad[1]-20)+buttons['weekPlus'].heigh
 labels['distance'].right = RES[0]-10
 labels['distance'].centery = (RES[1]/2)+(tmpPad[1]-buttons['weekPlus'].height)
 labelBgRect = pygame.rect.Rect(0,labels['hello'].top-10,RES[0],0)
-labelBgRect.height = (labels['distance'].bottom+10)-(labels['hello'].top-10)
+labelBgRect.height = (labels['distance'].bottom+20)-(labels['hello'].top-10)
 labelBg = pygame.Surface((labelBgRect.width,labelBgRect.height),SRCALPHA)
 labelBg.fill(pygame.Color(0,0,0,160),(0,0,RES[0],labelBgRect.height))
+labelBg.fill(pygame.Color(0,0,0,230),(0,labelBgRect.height-20,RES[0],labelBgRect.height))
+# END OF HORRIBLE CODE CHUNK
 
 change = ''
 
@@ -143,10 +145,6 @@ while RUNNING:
 	if w.started:
 
 		details = w.get(time())
-		if change != details[0]:
-			say(details[0]+'\n')
-			bell.play()
-			change = details[0]
 
 		# Update elapsed time and distance travelled.
 		# Make sure labels are still aligned to the right of
@@ -155,6 +153,19 @@ while RUNNING:
 		labels['command'].text = details[0]
 		labels['command'].right = RES[0]-10
 		labels['distance'].text = str(w.distance)+' mi.'
+		labelBg.fill(pygame.Color(0,int(details[2]),int(150+(details[2]*1.05)),230),
+			(0,labelBgRect.height-20,(details[2]*(RES[0]/100)),labelBgRect.height))
+		
+		if details[0] == 'Finished!':
+			try:
+				w.gpsControl.stop()
+			except:
+				pass
+			w.started = False
+		if change != details[0]:
+			bell.play()
+			say(details[0]+'\n')
+			change = details[0]
 
 		# Play nice, gobject.
 		try:

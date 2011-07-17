@@ -106,13 +106,14 @@ class Workout:
 	def get(self,time):
 		time -= self.startTime
 		duration = self.warmup + sum(self.pattern[0:self.index+1])
+		percent = (time/(self.warmup + sum(self.pattern)))*100
 		if time > duration:
 			self.index += 1
 		if time < self.warmup:
-			return ('Walk',time)
+			return ('Walk',time,percent)
 		if time > self.warmup + sum(self.pattern):
-			return ('Finished!',time)
-		return (['Jog','Walk'][self.index % 2],time)
+			return ('Finished!',time,100)
+		return (['Jog','Walk'][self.index % 2],time,percent)
 
 # Python version of the Vincenty algorithm as described
 # on this very helpful page:
@@ -158,4 +159,6 @@ def distVincenty(lat1, lon1, lat2, lon2):
 			B/6*cos2SigmaM*(-3+4*sinSigma*sinSigma)*(-3+4*cos2SigmaM*cos2SigmaM)))
 		s = b*A*(sigma-deltaSigma)
 
-		return round(s*0.000621371192,3)
+		#return round(s*0.000621371192,3)
+		#return round(s,3)
+		return s
