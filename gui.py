@@ -75,6 +75,14 @@ class Button(pygame.Rect):
 		self.pressed = False
 		self.update()
 
+class ToggleButton(Button):
+	def down(self,pos):
+		if self.collidepoint(pos):
+			self.pressed = ~self.pressed
+			self.update()
+	def up(self,pos):
+		pass
+
 class Label(pygame.Rect):
 	def __init__(self,text,pos,fg=pygame.Color(255,255,255,255),bg=None,font=fonts['default'],sc=pygame.Color(0,0,0,100)):
 		pygame.Rect.__init__(self,pos,(0,0))

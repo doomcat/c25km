@@ -91,15 +91,19 @@ bell = pygame.mixer.Sound('bicycle_bell.wav')
 background = pygame.image.load('jogger.jpg')
 background = pygame.transform.smoothscale(background, RES)
 buttons = {
-	'quit': Button('Quit',(690,10),f=quit,font=fonts['h1']),
+	'minimize': Button(' - ', (10,10),f=lambda: pygame.display.iconify(),font=fonts['bold']),
+	'quit': Button(' x ',(690,10),f=quit,font=fonts['bold']),
 	'start': Button('Start!',(10,10),f=start,font=fonts['h1']),
 	'weekPlus': Button('Week +',(10,0),f=lambda: set(1,0),font=fonts['h2']),
 	'weekMinus': Button('Week -',(10,0),f=lambda: set(-1,0),font=fonts['h2']),
 	'workoutPlus': Button('Workout +',(10,0),f=lambda: set(0,1),font=fonts['h2']),
-	'workoutMinus': Button('Workout -',(10,0),f=lambda: set(0,-1),font=fonts['h2'])
+	'workoutMinus': Button('Workout -',(10,0),f=lambda: set(0,-1),font=fonts['h2']),
+	'gpsToggle': ToggleButton('GPS',(10,0),font=fonts['h2']),
+	'soundToggle': ToggleButton('Sound', (10,0),font=fonts['h2'])
 }
 buttons['quit'].right = RES[0]-10
-padding = distances([buttons['weekPlus'],buttons['weekMinus'],buttons['workoutPlus'],buttons['workoutMinus']])
+buttons['start'].centerx = RES[0]/2
+padding = distances([buttons['weekPlus'],buttons['weekMinus'],buttons['workoutPlus'],buttons['workoutMinus'],buttons['gpsToggle'],buttons['soundToggle']])
 buttons['weekMinus'].left = (padding[0])+20
 buttons['workoutMinus'].left = (padding[0])+20
 for b in ['Plus','Minus']:
@@ -107,7 +111,11 @@ for b in ['Plus','Minus']:
 	buttons['week'+b].size = padding[0:2]
 	buttons['workout'+b].top = RES[1]-padding[1]-10
 	buttons['workout'+b].size = padding[0:2]
-
+for b in ['gps','sound']:
+	buttons[b+'Toggle'].size = padding[0:2]
+	buttons[b+'Toggle'].right = RES[0]-10
+buttons['gpsToggle'].top = RES[1]-(2*padding[1])-20
+buttons['soundToggle'].top = RES[1]-padding[1]-10
 labels = {
 	'hello': Label('Ready?',(10,0),font=fonts['h2']),
 	'status': Label('Week: '+str(state.week)+', Workout: '+str(state.workout),(10,0),font=fonts['h1']),
@@ -163,13 +171,15 @@ while RUNNING:
 				pass
 			w.started = False
 		if change != details[0]:
-			bell.play()
-			say(details[0]+'\n')
+			if buttons['soundToggle'].pressed:
+				bell.play()
+				say(details[0]+'\n')
 			change = details[0]
 
 		# Play nice, gobject.
 		try:
-			context.iteration(False)
+			if buttons['gpsToggle'].pressed:
+				context.iteration(False)
 		except:
 			pass
 
@@ -181,9 +191,9 @@ while RUNNING:
 				quit()
 		# Check for button clicks
 		elif e.type == MOUSEBUTTONDOWN:
-			map((lambda button: Button.down(button,e.pos)),buttons.values())
+			map((lambda button: button.down(e.pos)),buttons.values())
 		elif e.type == MOUSEBUTTONUP:
-			map((lambda button: Button.up(button,e.pos)),buttons.values())
+			map((lambda button: button.up(e.pos)),buttons.values())
 
 	screen.blit(background,(0,0))
 	screen.blit(labelBg,labelBgRect)

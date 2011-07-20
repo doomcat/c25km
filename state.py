@@ -1,2 +1,2 @@
 week = 1
-workout = 2
+workout = 1
