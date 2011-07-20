@@ -1,9 +1,10 @@
 #!/usr/bin/env python -OO
 import pygame, state, subprocess
+from commands import getoutput
 from pygame.locals import *
 from workout import *
 from gui import *
-from time import time,sleep
+from time import time,strftime,localtime,sleep
 from os import system
 
 pygame.init()
@@ -45,7 +46,21 @@ def quit():
 	RUNNING = False
 	f = open('state.py','w+')
 	f.write('week = '+str(state.week)+'\nworkout = '+str(state.workout)+'\n')
+	f.write('gps = '+str(buttons['gpsToggle'].pressed)+'\nsound = '+str(buttons['soundToggle'].pressed)+'\n')
 	f.close()
+
+def minimize():
+	if MOBILE:
+		system("dbus-send /com/nokia/hildon_desktop com.nokia.hildon_desktop.exit_app_view")
+	else:
+		pygame.display.iconify()
+
+def getBattery():
+	try:
+		out = getoutput('lshal | grep battery.charge_level.percentage').split(' ')[1]
+		return int(out)
+	except:
+		return 0
 
 def start():
 	global w
@@ -65,10 +80,7 @@ def set(week=0,workout=0):
 
 # Prettify seconds into a string
 def minutes(n):
-	min = str(int(n/60) % 60)
-	sec = str(int(n) % 60)
-
-	return ('0'*(2-len(min)))+min+':'+('0'*(2-len(sec)))+sec
+	return strftime('%M:%S',localtime(n))
 
 # If on a mobile device, run fullscreen, without cursor, since it's
 # a touchscreen. Otherwise, run in a window, the size defined in RES
@@ -91,9 +103,9 @@ bell = pygame.mixer.Sound('bicycle_bell.wav')
 background = pygame.image.load('jogger.jpg')
 background = pygame.transform.smoothscale(background, RES)
 buttons = {
-	'minimize': Button(' - ', (10,10),f=lambda: pygame.display.iconify(),font=fonts['bold']),
-	'quit': Button(' x ',(690,10),f=quit,font=fonts['bold']),
-	'start': Button('Start!',(10,10),f=start,font=fonts['h1']),
+	'minimize': Button(' - ', (10,10),f=minimize,font=fonts['h1']),
+	'quit': Button(' x ',(690,10),f=quit,font=fonts['h1']),
+	'start': Button('Start!',(10,10),f=start,font=fonts['huge']),
 	'weekPlus': Button('Week +',(10,0),f=lambda: set(1,0),font=fonts['h2']),
 	'weekMinus': Button('Week -',(10,0),f=lambda: set(-1,0),font=fonts['h2']),
 	'workoutPlus': Button('Workout +',(10,0),f=lambda: set(0,1),font=fonts['h2']),
@@ -111,9 +123,13 @@ for b in ['Plus','Minus']:
 	buttons['week'+b].size = padding[0:2]
 	buttons['workout'+b].top = RES[1]-padding[1]-10
 	buttons['workout'+b].size = padding[0:2]
+padding = distances([buttons['gpsToggle'],buttons['soundToggle']])
 for b in ['gps','sound']:
 	buttons[b+'Toggle'].size = padding[0:2]
 	buttons[b+'Toggle'].right = RES[0]-10
+	line = compile("buttons['"+b+"Toggle'].pressed = state."+b,'<string>','single')
+	exec line
+	buttons[b+'Toggle'].update()
 buttons['gpsToggle'].top = RES[1]-(2*padding[1])-20
 buttons['soundToggle'].top = RES[1]-padding[1]-10
 labels = {
@@ -121,9 +137,14 @@ labels = {
 	'status': Label('Week: '+str(state.week)+', Workout: '+str(state.workout),(10,0),font=fonts['h1']),
 	'command': Label('',(0,0),font=fonts['huge']),
 	'distanceTxt': Label('Distance Travelled',(10,0),font=fonts['h2']),
-	'distance': Label('0.0 mi.',(0,0),font=fonts['huge'])
+	'distance': Label('0.0 mi.',(0,0),font=fonts['huge']),
+	'time': Label('00:00',(0,10),font=fonts['h2']),
+	'battery': Label('100%',(0,20),font=fonts['h2'])
 }
 tmpPad = distances(labels.values(),'max')
+labels['time'].right = buttons['quit'].left-10
+labels['battery'].right = buttons['quit'].left-10
+labels['battery'].top = labels['time'].bottom
 labels['hello'].centery = (RES[1]/2)-(tmpPad[1]+buttons['weekPlus'].height)
 labels['status'].centery = (RES[1]/2)-buttons['weekPlus'].height
 labels['distanceTxt'].centery = (RES[1]/2)+(tmpPad[1]-buttons['weekPlus'].height)
@@ -136,6 +157,9 @@ labelBgRect.height = (labels['distance'].bottom+20)-(labels['hello'].top-10)
 labelBg = pygame.Surface((labelBgRect.width,labelBgRect.height),SRCALPHA)
 labelBg.fill(pygame.Color(0,0,0,160),(0,0,RES[0],labelBgRect.height))
 labelBg.fill(pygame.Color(0,0,0,230),(0,labelBgRect.height-20,RES[0],labelBgRect.height))
+#batteryBgRect = pygame.rect.Rect(labels['time'].left,labels['time'].bottom+2,buttons['quit'].left-10,labels['time'].height-2)
+#batteryBg = pygame.Surface((batteryBgRect.width,batteryBgRect.height),SRCALPHA)
+#batteryBg.fill(pygame.Color(0,0,255,255),(0,0,batteryBgRect.height,batteryBgRect.width))
 # END OF HORRIBLE CODE CHUNK
 
 change = ''
@@ -183,6 +207,9 @@ while RUNNING:
 		except:
 			pass
 
+	labels['time'].text = strftime('%H:%M',localtime())
+	labels['battery'].text = str(getBattery())+'%'
+
 	for e in pygame.event.get():
 		if e.type == QUIT:
 			quit()
@@ -197,14 +224,15 @@ while RUNNING:
 
 	screen.blit(background,(0,0))
 	screen.blit(labelBg,labelBgRect)
+	#screen.blit(batteryBg, batteryBgRect)
 
 	# Draw the UI elements
-	map((lambda button: Button.draw(button,screen)),buttons.values())
-	map((lambda label: Label.draw(label,screen)),labels.values())
+	map((lambda button: button.draw(screen)),buttons.values())
+	map((lambda label: label.draw(screen)),labels.values())
 
 	pygame.display.flip()
 
 	# Sleep a little to save some CPU. Since nothing needs less than a second
 	# for update granularity. This obviously makes the UI less responsive however.
 	if MOBILE:
-		sleep(1)
+		sleep(.5)
