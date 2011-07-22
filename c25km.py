@@ -57,7 +57,7 @@ def minimize():
 
 def getBattery():
 	try:
-		out = getoutput('lshal | grep battery.charge_level.percentage').split(' ')[1]
+		out = getoutput('lshal | grep battery.charge_level.percentage').split(' ')[4]
 		return int(out)
 	except:
 		return 0
@@ -85,23 +85,26 @@ def minutes(n):
 # If on a mobile device, run fullscreen, without cursor, since it's
 # a touchscreen. Otherwise, run in a window, the size defined in RES
 # at the top of this file.
+flags = 0
 if MOBILE == True:
 	RES = (pygame.display.Info().current_w,pygame.display.Info().current_h)
-	screen = pygame.display.set_mode(RES,FULLSCREEN|SRCALPHA)
+	flags = FULLSCREEN
 	pygame.mouse.set_visible(False)
 else:
-	screen = pygame.display.set_mode(RES,SRCALPHA)
+	flags = RESIZABLE
+pygame.display.set_mode(RES,flags|SRCALPHA)
 
 # This part is horrible to look at. It's responsible for scaling + placing
 # the UI elements correctly on the screen, resolution-independent.
-FRES = RES[0]*RES[1]/1000
-initFonts(FRES)
 pygame.display.set_caption("Couch to 5k Coach")
 c = pygame.time.Clock()
-w = Workout(state.week,state.workout)
+w = Workout(state.week, state.workout)
 bell = pygame.mixer.Sound('bicycle_bell.wav')
-background = pygame.image.load('jogger.jpg')
-background = pygame.transform.smoothscale(background, RES)
+bg = pygame.image.load('jogger.jpg')
+background = pygame.transform.smoothscale(bg, RES)
+FRES = RES[0]*RES[1]/1000
+initFonts(FRES)
+
 buttons = {
 	'minimize': Button(' - ', (10,10),f=minimize,font=fonts['h1']),
 	'quit': Button(' x ',(690,10),f=quit,font=fonts['h1']),
@@ -113,25 +116,7 @@ buttons = {
 	'gpsToggle': ToggleButton('GPS',(10,0),font=fonts['h2']),
 	'soundToggle': ToggleButton('Sound', (10,0),font=fonts['h2'])
 }
-buttons['quit'].right = RES[0]-10
-buttons['start'].centerx = RES[0]/2
-padding = distances([buttons['weekPlus'],buttons['weekMinus'],buttons['workoutPlus'],buttons['workoutMinus'],buttons['gpsToggle'],buttons['soundToggle']])
-buttons['weekMinus'].left = (padding[0])+20
-buttons['workoutMinus'].left = (padding[0])+20
-for b in ['Plus','Minus']:
-	buttons['week'+b].top = RES[1]-(2*padding[1])-20
-	buttons['week'+b].size = padding[0:2]
-	buttons['workout'+b].top = RES[1]-padding[1]-10
-	buttons['workout'+b].size = padding[0:2]
-padding = distances([buttons['gpsToggle'],buttons['soundToggle']])
-for b in ['gps','sound']:
-	buttons[b+'Toggle'].size = padding[0:2]
-	buttons[b+'Toggle'].right = RES[0]-10
-	line = compile("buttons['"+b+"Toggle'].pressed = state."+b,'<string>','single')
-	exec line
-	buttons[b+'Toggle'].update()
-buttons['gpsToggle'].top = RES[1]-(2*padding[1])-20
-buttons['soundToggle'].top = RES[1]-padding[1]-10
+
 labels = {
 	'hello': Label('Ready?',(10,0),font=fonts['h2']),
 	'status': Label('Week: '+str(state.week)+', Workout: '+str(state.workout),(10,0),font=fonts['h1']),
@@ -141,26 +126,52 @@ labels = {
 	'time': Label('00:00',(0,10),font=fonts['h2']),
 	'battery': Label('100%',(0,20),font=fonts['h2'])
 }
-tmpPad = distances(labels.values(),'max')
-labels['time'].right = buttons['quit'].left-10
-labels['battery'].right = buttons['quit'].left-10
-labels['battery'].top = labels['time'].bottom
-labels['hello'].centery = (RES[1]/2)-(tmpPad[1]+buttons['weekPlus'].height)
-labels['status'].centery = (RES[1]/2)-buttons['weekPlus'].height
-labels['distanceTxt'].centery = (RES[1]/2)+(tmpPad[1]-buttons['weekPlus'].height)
-labels['command'].right = RES[0]-10
-labels['command'].centery = (RES[1]/2)-((tmpPad[1]-20)+buttons['weekPlus'].height)
-labels['distance'].right = RES[0]-10
-labels['distance'].centery = (RES[1]/2)+(tmpPad[1]-buttons['weekPlus'].height)
-labelBgRect = pygame.rect.Rect(0,labels['hello'].top-10,RES[0],0)
-labelBgRect.height = (labels['distance'].bottom+20)-(labels['hello'].top-10)
-labelBg = pygame.Surface((labelBgRect.width,labelBgRect.height),SRCALPHA)
-labelBg.fill(pygame.Color(0,0,0,160),(0,0,RES[0],labelBgRect.height))
-labelBg.fill(pygame.Color(0,0,0,230),(0,labelBgRect.height-20,RES[0],labelBgRect.height))
-#batteryBgRect = pygame.rect.Rect(labels['time'].left,labels['time'].bottom+2,buttons['quit'].left-10,labels['time'].height-2)
-#batteryBg = pygame.Surface((batteryBgRect.width,batteryBgRect.height),SRCALPHA)
-#batteryBg.fill(pygame.Color(0,0,255,255),(0,0,batteryBgRect.height,batteryBgRect.width))
-# END OF HORRIBLE CODE CHUNK
+
+def setupUI():
+	global background,buttons,labels,labelBg,labelBgRect,screen,flags,fonts
+	FRES = min(RES)
+	initFonts(FRES)
+	screen = pygame.display.set_mode(RES, flags|SRCALPHA)
+	background = pygame.transform.smoothscale(bg, RES)
+	buttons['quit'].right = RES[0]-10
+	buttons['start'].centerx = RES[0]/2
+	padding = distances([buttons['weekPlus'],buttons['weekMinus'],buttons['workoutPlus'],buttons['workoutMinus'],buttons['gpsToggle'],buttons['soundToggle']])
+	buttons['weekMinus'].left = (padding[0])+20
+	buttons['workoutMinus'].left = (padding[0])+20
+	for b in ['Plus','Minus']:
+		buttons['week'+b].top = RES[1]-(2*padding[1])-20
+		buttons['week'+b].size = padding[0:2]
+		buttons['workout'+b].top = RES[1]-padding[1]-10
+		buttons['workout'+b].size = padding[0:2]
+	padding = distances([buttons['gpsToggle'],buttons['soundToggle']])
+	for b in ['gps','sound']:
+		buttons[b+'Toggle'].size = padding[0:2]
+		buttons[b+'Toggle'].right = RES[0]-10
+		line = compile("buttons['"+b+"Toggle'].pressed = state."+b,'<string>','single')
+		exec line in globals(),locals()
+		buttons[b+'Toggle'].update()
+	buttons['gpsToggle'].top = RES[1]-(2*padding[1])-20
+	buttons['soundToggle'].top = RES[1]-padding[1]-10
+	tmpPad = distances(labels.values(),'max')
+	tmpPad[1] -= 10
+	labels['time'].right = buttons['quit'].left-10
+	labels['battery'].right = buttons['quit'].left-10
+	labels['battery'].top = labels['time'].bottom
+	labels['battery'].text = str(getBattery())+'%'
+	labels['hello'].centery = (RES[1]/2)-(tmpPad[1]+buttons['weekPlus'].height)
+	labels['status'].centery = (RES[1]/2)-buttons['weekPlus'].height
+	labels['distanceTxt'].centery = (RES[1]/2)+(tmpPad[1]-buttons['weekPlus'].height)
+	labels['command'].right = RES[0]-10
+	#labels['command'].centery = (RES[1]/2)-((tmpPad[1]-20)+buttons['weekPlus'].height)
+	labels['command'].top = labels['hello'].top
+	labels['distance'].right = RES[0]-10
+	labels['distance'].centery = (RES[1]/2)+(tmpPad[1]-buttons['weekPlus'].height)
+	labelBgRect = pygame.rect.Rect(0,labels['hello'].top-10,RES[0],0)
+	labelBgRect.height = (labels['distance'].bottom+20)-(labels['hello'].top-10)
+	labelBg = pygame.Surface((labelBgRect.width,labelBgRect.height),SRCALPHA)
+	labelBg.fill(pygame.Color(0,0,0,160),(0,0,RES[0],labelBgRect.height))
+	labelBg.fill(pygame.Color(0,0,0,230),(0,labelBgRect.height-20,RES[0],labelBgRect.height))
+	# END OF HORRIBLE CODE CHUNK
 
 change = ''
 
@@ -171,6 +182,8 @@ try:
 	context = loop.get_context()
 except:
 	pass
+
+setupUI()
 
 # MAKE IT HAPEN
 while RUNNING:
@@ -198,6 +211,7 @@ while RUNNING:
 			if buttons['soundToggle'].pressed:
 				bell.play()
 				say(details[0]+'\n')
+			labels['battery'].text = str(getBattery())+'%'
 			change = details[0]
 
 		# Play nice, gobject.
@@ -208,7 +222,6 @@ while RUNNING:
 			pass
 
 	labels['time'].text = strftime('%H:%M',localtime())
-	labels['battery'].text = str(getBattery())+'%'
 
 	for e in pygame.event.get():
 		if e.type == QUIT:
@@ -221,6 +234,9 @@ while RUNNING:
 			map((lambda button: button.down(e.pos)),buttons.values())
 		elif e.type == MOUSEBUTTONUP:
 			map((lambda button: button.up(e.pos)),buttons.values())
+		elif e.type == VIDEORESIZE:
+			RES = e.size
+			setupUI()
 
 	screen.blit(background,(0,0))
 	screen.blit(labelBg,labelBgRect)

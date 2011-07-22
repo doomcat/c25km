@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 
-FRES = 800*480/1000
+FRES = 480
 
 pygame.font.init()
 fonts = {'default': pygame.font.SysFont('Arial',12)}
@@ -118,6 +118,6 @@ def distances(rects,maxOrMin='max'):
 		xs.append(r.left)
 		ys.append(r.top)
 	if maxOrMin == 'max':
-		return (max(widths),max(heights),max(xs),max(ys))
+		return [max(widths),max(heights),max(xs),max(ys)]
 	else:
-		return (min(widths),min(heights),min(xs),min(ys))
+		return [min(widths),min(heights),min(xs),min(ys)]

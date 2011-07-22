@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Categories=Other
+Comment=Couch To 5k Coach for Maemo
+Title=Couch To 5K
+Exec=/usr/bin/c25k
+Icon=/home/user/MyDocs/c25km/icon.png
+Terminal=false
+X-Osso-Type=application/x-executable
