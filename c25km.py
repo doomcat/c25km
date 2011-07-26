@@ -103,34 +103,39 @@ bell = pygame.mixer.Sound('bicycle_bell.wav')
 bg = pygame.image.load('jogger.jpg')
 background = pygame.transform.smoothscale(bg, RES)
 FRES = RES[0]*RES[1]/1000
-initFonts(FRES)
+fonts = initFonts(FRES)
 
 buttons = {
-	'minimize': Button(' - ', (10,10),f=minimize,font=fonts['h1']),
-	'quit': Button(' x ',(690,10),f=quit,font=fonts['h1']),
-	'start': Button('Start!',(10,10),f=start,font=fonts['huge']),
-	'weekPlus': Button('Week +',(10,0),f=lambda: set(1,0),font=fonts['h2']),
-	'weekMinus': Button('Week -',(10,0),f=lambda: set(-1,0),font=fonts['h2']),
-	'workoutPlus': Button('Workout +',(10,0),f=lambda: set(0,1),font=fonts['h2']),
-	'workoutMinus': Button('Workout -',(10,0),f=lambda: set(0,-1),font=fonts['h2']),
-	'gpsToggle': ToggleButton('GPS',(10,0),font=fonts['h2']),
-	'soundToggle': ToggleButton('Sound', (10,0),font=fonts['h2'])
+	'minimize': Button(' - ', (10,10),f=minimize,font='h1'),
+	'quit': Button(' x ',(690,10),f=quit,font='h1'),
+	'start': Button('Start!',(10,10),f=start,font='huge'),
+	'weekPlus': Button('Week +',(10,0),f=lambda: set(1,0),font='h2'),
+	'weekMinus': Button('Week -',(10,0),f=lambda: set(-1,0),font='h2'),
+	'workoutPlus': Button('Workout +',(10,0),f=lambda: set(0,1),font='h2'),
+	'workoutMinus': Button('Workout -',(10,0),f=lambda: set(0,-1),font='h2'),
+	'gpsToggle': ToggleButton('GPS',(10,0),font='h2'),
+	'soundToggle': ToggleButton('Sound', (10,0),font='h2')
 }
 
 labels = {
-	'hello': Label('Ready?',(10,0),font=fonts['h2']),
-	'status': Label('Week: '+str(state.week)+', Workout: '+str(state.workout),(10,0),font=fonts['h1']),
-	'command': Label('',(0,0),font=fonts['huge']),
-	'distanceTxt': Label('Distance Travelled',(10,0),font=fonts['h2']),
-	'distance': Label('0.0 mi.',(0,0),font=fonts['huge']),
-	'time': Label('00:00',(0,10),font=fonts['h2']),
-	'battery': Label('100%',(0,20),font=fonts['h2'])
+	'hello': Label('Ready?',(10,0),font='h2'),
+	'status': Label('Week: '+str(state.week)+', Workout: '+str(state.workout),(10,0),font='h1'),
+	'command': Label('',(0,0),font='huge'),
+	'distanceTxt': Label('Distance Travelled',(10,0),font='h2'),
+	'distance': Label('0.0 mi.',(0,0),font='huge'),
+	'time': Label('00:00',(0,10),font='h2'),
+	'battery': Label('100%',(0,20),font='h2')
 }
 
 def setupUI():
 	global background,buttons,labels,labelBg,labelBgRect,screen,flags,fonts
 	FRES = min(RES)
-	initFonts(FRES)
+	fonts = initFonts(FRES)
+	for b in buttons.values():
+		b.font = fonts[b.fontName]
+	for l in labels.values():
+		l.font = fonts[l.fontName]
+
 	screen = pygame.display.set_mode(RES, flags|SRCALPHA)
 	background = pygame.transform.smoothscale(bg, RES)
 	buttons['quit'].right = RES[0]-10
@@ -231,9 +236,11 @@ while RUNNING:
 				quit()
 		# Check for button clicks
 		elif e.type == MOUSEBUTTONDOWN:
-			map((lambda button: button.down(e.pos)),buttons.values())
+			#map((lambda button: button.down(e.pos)),buttons.values())
+			[button.down(e.pos) for button in buttons.values()]
 		elif e.type == MOUSEBUTTONUP:
-			map((lambda button: button.up(e.pos)),buttons.values())
+			#map((lambda button: button.up(e.pos)),buttons.values())
+			[button.up(e.pos) for button in buttons.values()]
 		elif e.type == VIDEORESIZE:
 			RES = e.size
 			setupUI()
@@ -243,8 +250,10 @@ while RUNNING:
 	#screen.blit(batteryBg, batteryBgRect)
 
 	# Draw the UI elements
-	map((lambda button: button.draw(screen)),buttons.values())
-	map((lambda label: label.draw(screen)),labels.values())
+	#map((lambda button: button.draw(screen)),buttons.values())
+	#map((lambda label: label.draw(screen)),labels.values())
+	[button.draw(screen) for button in buttons.values()]
+	[label.draw(screen) for label in labels.values()]
 
 	pygame.display.flip()
 

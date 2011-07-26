@@ -6,22 +6,28 @@ FRES = 480
 pygame.font.init()
 fonts = {'default': pygame.font.SysFont('Arial',12)}
 def initFonts(fres=FRES):
+	pygame.font.init()
 	global fonts
-	fonts['huge'] = pygame.font.SysFont('Arial',fres/7,bold=True)
-	fonts['h1'] = pygame.font.SysFont('Arial',fres/12,bold=True)
-	fonts['h2'] = pygame.font.SysFont('Arial',fres/16,bold=True)
-	fonts['bold'] = pygame.font.SysFont('Arial',fres/22,bold=True)
-	fonts['normal'] = pygame.font.SysFont('Arial',fres/28)
-	fonts['small'] = pygame.font.SysFont('Arial',fres/36)
+	fonts = {
+		'default': pygame.font.SysFont('Arial',12),
+		'huge': pygame.font.SysFont('Arial',fres/7,bold=True),
+		'h1': pygame.font.SysFont('Arial',fres/12,bold=True),
+		'h2': pygame.font.SysFont('Arial',fres/16,bold=True),
+		'bold': pygame.font.SysFont('Arial',fres/22,bold=True),
+		'normal': pygame.font.SysFont('Arial',fres/28),
+		'small': pygame.font.SysFont('Arial',fres/36)
+	}
+	return fonts
 
 class Button(pygame.Rect):
-	def __init__(self,label,pos,size=None,f=None,fg=pygame.Color(255,255,255,255),bg=pygame.Color(128,0,0,160),font=fonts['default'],pad=5):
+	def __init__(self,label,pos,size=None,f=None,fg=pygame.Color(255,255,255,255),bg=pygame.Color(128,0,0,160),font='default',pad=5):
 		self.label = label
 		self.pressed = False
 		self.f = f
 		self.fg = fg
 		self.bg = bg
-		self.font = font
+		self.font = fonts[font]
+		self.fontName = font
 		self.pad = pad
 
 		self.labels = [
@@ -85,16 +91,17 @@ class ToggleButton(Button):
 			self.update()
 
 class Label(pygame.Rect):
-	def __init__(self,text,pos,fg=pygame.Color(255,255,255,255),bg=None,font=fonts['default'],sc=pygame.Color(0,0,0,100)):
+	def __init__(self,text,pos,fg=pygame.Color(255,255,255,255),bg=None,font='default',sc=pygame.Color(0,0,0,100)):
 		pygame.Rect.__init__(self,pos,(0,0))
-		self.label = font.render(text,True,fg)
-		self.shadow = font.render(text,True,sc)
+		self.label = fonts[font].render(text,True,fg)
+		self.shadow = fonts[font].render(text,True,sc)
 		self.size = self.label.get_size()
 		self.text = text
 		self.oldText = text
 		self.fg = fg
 		self.bg = bg
-		self.font = font
+		self.font = fonts[font]
+		self.fontName = font
 		self.sc = sc
 
 	def draw(self,surface):
